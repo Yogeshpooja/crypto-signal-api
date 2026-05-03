@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Signal Trading Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .auth-container {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        .auth-card {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            width: 350px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        .auth-card h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        button:hover {
+            opacity: 0.9;
+        }
+        .dashboard {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            display: none;
+        }
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #eee;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .logout-btn {
+            width: auto;
+            padding: 8px 20px;
+            background: #dc3545;
+        }
+        .admin-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        .form-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .form-group input, .form-group select {
+            flex: 1;
+            min-width: 100px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            overflow-x: auto;
+            display: block;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background: #667eea;
+            color: white;
+        }
+        .delete-btn, .edit-btn {
+            padding: 5px 10px;
+            margin: 0 5px;
+            font-size: 12px;
+            width: auto;
+        }
+        .delete-btn {
+            background: #dc3545;
+        }
+        .edit-btn {
+            background: #28a745;
+        }
+        .alert {
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .role-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+        .role-admin {
+            background: #dc3545;
+            color: white;
+        }
+        .role-user {
+            background: #28a745;
+            color: white;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+        }
+        @media (max-width: 768px) {
+            .auth-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            .form-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="authSection" class="auth-container">
+            <div class="auth-card">
+                <h2> Register</h2>
+                <input type="text" id="regName" placeholder="Full Name">
+                <input type="email" id="regEmail" placeholder="Email">
+                <input type="password" id="regPassword" placeholder="Password">
+                <button onclick="register()">Register</button>
+            </div>
+            <div class="auth-card">
+                <h2> Login</h2>
+                <input type="email" id="loginEmail" placeholder="Email">
+                <input type="password" id="loginPassword" placeholder="Password">
+                <button onclick="login()">Login</button>
+            </div>
+        </div>
+
+        <div id="dashboard" class="dashboard">
+            <div class="navbar">
+                <h2> Crypto Trading Signals</h2>
+                <div>
+                    <span id="userInfo" style="margin-right: 15px;"></span>
+                    <button class="logout-btn" onclick="logout()">Logout</button>
+                </div>
+            </div>
+
+            <div id="alertContainer"></div>
+
+            <div id="adminSection" class="admin-section">
+                <h3> Create New Signal</h3>
+                <div class="form-group">
+                    <select id="signalCoin">
+                        <option value="BTC">BTC - Bitcoin</option>
+                        <option value="ETH">ETH - Ethereum</option>
+                        <option value="SOL">SOL - Solana</option>
+                        <option value="BNB">BNB - Binance</option>
+                        <option value="XRP">XRP - Ripple</option>
+                    </select>
+                    <select id="signalType">
+                        <option value="BUY">BUY</option>
+                        <option value="SELL">SELL</option>
+                    </select>
+                    <input type="number" id="signalEntry" placeholder="Entry Price">
+                    <input type="number" id="signalTarget" placeholder="Target Price">
+                    <input type="number" id="signalStop" placeholder="Stop Loss">
+                    <button onclick="createSignal()">Create Signal</button>
+                </div>
+            </div>
+
+            <h3> Active Signals</h3>
+            <div id="signalsList">
+                <div class="loading">Loading signals...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentToken = localStorage.getItem('token');
+        let currentUser = null;
+
+        if (currentToken) {
+            loadDashboard();
+        }
+
+        async function register() {
+            const name = document.getElementById('regName').value;
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
+
+            try {
+                const response = await fetch('/api/v1/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, password })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    showAlert(' Registration successful! Please login.', 'success');
+                    document.getElementById('regName').value = '';
+                    document.getElementById('regEmail').value = '';
+                    document.getElementById('regPassword').value = '';
+                } else {
+                    showAlert(' ' + data.message, 'error');
+                }
+            } catch (error) {
+                showAlert(' Registration failed!', 'error');
+            }
+        }
+
+        async function login() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                const response = await fetch('/api/v1/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    localStorage.setItem('token', data.token);
+                    currentToken = data.token;
+                    currentUser = data.user;
+                    loadDashboard();
+                    showAlert(' Login successful!', 'success');
+                } else {
+                    showAlert(' ' + data.message, 'error');
+                }
+            } catch (error) {
+                showAlert(' Login failed!', 'error');
+            }
+        }
+
+        async function loadDashboard() {
+            document.getElementById('authSection').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'block';
+            
+            const userInfo = document.getElementById('userInfo');
+            
+            try {
+                const response = await fetch('/api/v1/auth/me', {
+                    headers: { 'Authorization': `Bearer ${currentToken}` }
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    currentUser = data.user;
+                    userInfo.innerHTML = `${currentUser.name} <span class="role-badge role-${currentUser.role}">${currentUser.role}</span>`;
+                    
+                    if (currentUser.role === 'admin') {
+                        document.getElementById('adminSection').style.display = 'block';
+                    }
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+            
+            loadSignals();
+        }
+
+        async function loadSignals() {
+            const signalsList = document.getElementById('signalsList');
+            signalsList.innerHTML = '<div class="loading">Loading signals...</div>';
+            
+            try {
+                const response = await fetch('/api/v1/signals/active', {
+                    headers: { 'Authorization': `Bearer ${currentToken}` }
+                });
+                const signals = await response.json();
+                
+                if (!signals.length) {
+                    signalsList.innerHTML = '<p>No active signals available.</p>';
+                    return;
+                }
+                
+                let html = '<table><thead><tr><th>Coin</th><th>Type</th><th>Entry</th><th>Target</th><th>Stop Loss</th><th>Status</th><th>Created By</th>';
+                if (currentUser && currentUser.role === 'admin') html += '<th>Actions</th>';
+                html += '</thead><tbody>';
+                
+                for (const signal of signals) {
+                    html += '<tr>';
+                    html += `<td>${signal.coin}</td>`;
+                    html += `<td style="color: ${signal.type === 'BUY' ? 'green' : 'red'}">${signal.type}</td>`;
+                    html += `<td>$${signal.entry_price}</td>`;
+                    html += `<td>$${signal.target_price}</td>`;
+                    html += `<td>$${signal.stop_loss}</td>`;
+                    html += `<td>${signal.status}</td>`;
+                    html += `<td>${signal.created_by_name || 'Admin'}</td>`;
+                    if (currentUser && currentUser.role === 'admin') {
+                        html += `<td><button class="edit-btn" onclick="editSignal(${signal.id})">Edit</button>
+                                <button class="delete-btn" onclick="deleteSignal(${signal.id})">Delete</button></td>`;
+                    }
+                    html += '</tr>';
+                }
+                html += '</tbody></table>';
+                signalsList.innerHTML = html;
+            } catch (error) {
+                signalsList.innerHTML = '<p>Error loading signals.</p>';
+            }
+        }
+
+        async function createSignal() {
+            const coin = document.getElementById('signalCoin').value;
+            const type = document.getElementById('signalType').value;
+            const entryPrice = document.getElementById('signalEntry').value;
+            const targetPrice = document.getElementById('signalTarget').value;
+            const stopLoss = document.getElementById('signalStop').value;
+            
+            if (!entryPrice || !targetPrice || !stopLoss) {
+                showAlert(' Please fill all fields!', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/v1/signals', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${currentToken}`
+                    },
+                    body: JSON.stringify({ coin, type, entryPrice, targetPrice, stopLoss })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    showAlert(' Signal created!', 'success');
+                    document.getElementById('signalEntry').value = '';
+                    document.getElementById('signalTarget').value = '';
+                    document.getElementById('signalStop').value = '';
+                    loadSignals();
+                } else {
+                    showAlert(' ' + data.message, 'error');
+                }
+            } catch (error) {
+                showAlert(' Failed to create signal!', 'error');
+            }
+        }
+
+        async function deleteSignal(id) {
+            if (!confirm('Delete this signal?')) return;
+            
+            try {
+                const response = await fetch(`/api/v1/signals/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${currentToken}` }
+                });
+                if (response.ok) {
+                    showAlert(' Signal deleted!', 'success');
+                    loadSignals();
+                } else {
+                    showAlert(' Delete failed!', 'error');
+                }
+            } catch (error) {
+                showAlert(' Delete failed!', 'error');
+            }
+        }
+        
+        async function editSignal(id) {
+            const newEntry = prompt('New entry price:');
+            const newTarget = prompt('New target price:');
+            const newStop = prompt('New stop loss:');
+            
+            if (newEntry && newTarget && newStop) {
+                try {
+                    const response = await fetch(`/api/v1/signals/${id}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${currentToken}`
+                        },
+                        body: JSON.stringify({
+                            coin: 'BTC',
+                            type: 'BUY',
+                            entryPrice: parseFloat(newEntry),
+                            targetPrice: parseFloat(newTarget),
+                            stopLoss: parseFloat(newStop),
+                            status: 'active'
+                        })
+                    });
+                    if (response.ok) {
+                        showAlert(' Signal updated!', 'success');
+                        loadSignals();
+                    } else {
+                        showAlert(' Update failed!', 'error');
+                    }
+                } catch (error) {
+                    showAlert(' Update failed!', 'error');
+                }
+            }
+        }
+
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById('alertContainer');
+            alertContainer.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+            setTimeout(() => {
+                alertContainer.innerHTML = '';
+            }, 3000);
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            currentToken = null;
+            currentUser = null;
+            document.getElementById('authSection').style.display = 'flex';
+            document.getElementById('dashboard').style.display = 'none';
+            showAlert(' Logged out!', 'success');
+        }
+    </script>
+</body>
+</html>
