@@ -11,9 +11,9 @@ const pool = new Pool({
 const connectDB = async () => {
   try {
     await pool.connect();
-    console.log('✅ PostgreSQL Connected');
-    
-    // Create tables if not exists
+    console.log(' PostgreSQL Connected');
+
+
     await pool.query(`
       CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
@@ -24,7 +24,7 @@ const connectDB = async () => {
         created_at TIMESTAMP DEFAULT NOW()
       )
     `);
-    
+
     await pool.query(`
       CREATE TABLE IF NOT EXISTS signals (
         id SERIAL PRIMARY KEY,
@@ -38,11 +38,11 @@ const connectDB = async () => {
         created_at TIMESTAMP DEFAULT NOW()
       )
     `);
-    
-    console.log('✅ Tables ready');
+
+    console.log(' Tables ready');
     return true;
   } catch (error) {
-    console.error('❌ DB Error:', error.message);
+    console.error(' DB Error:', error.message);
     return false;
   }
 };
